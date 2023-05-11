@@ -9,9 +9,9 @@ from django.contrib.auth.decorators import login_required
 # Create your views here.
 
 def registration(request):
-    UFO=UserForm()
-    PFO=ProfileForm()
-    d={'UFO':UFO,'PFO':PFO}
+    ufo=UserForm()
+    pfo=ProfileForm()
+    d={'ufo':ufo,'pfo':pfo}
     if request.method=='POST' and request.FILES:
         UFD=UserForm(request.POST)
         PFD=ProfileForm(request.POST,request.FILES)
@@ -20,14 +20,14 @@ def registration(request):
             NSUO.set_password(UFD.cleaned_data['password'])
             NSUO.save()
             NSPO=PFD.save(commit=False)
-            NSPO=username=NSUO
+            NSPO.username=NSUO
             NSPO.save()
 
             send_mail('Registration',
                        "successfully registration is done",
                        '19svdc6081@svdegreecollege.ac.in',
                        [NSUO.email],
-                       fail_silently=False
+                       fail_silently=True
 
                        )
 
@@ -67,3 +67,27 @@ def user_login(request):
 def user_logout(request):
     logout(request)
     return HttpResponseRedirect(reverse('home'))
+
+@login_required
+def display_profile(request):
+    username=request.session.get('username')
+    UO=User.objects.get(username=username)
+    PO=Profile.objects.get(username=UO)
+    d={'UO':UO,'PO':PO}
+    return render(request,'display_profile.html',d)
+
+@login_required
+def change_password(request):
+    if request.method=='POST':
+        pw=request.POST['pw']
+        username=request.session.get('username')
+        UO=User.objects.get(username=username)
+        UO.set_password(pw)
+        UO.save()
+        return HttpResponse('Password is changed successfully')
+    return render(request,'change_password.html')
+
+
+
+
+
